@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+   <link rel="stylesheet" href="./stylesheets/style.css">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div class="container">
+
+        <header>
+          <nav>
+            <ul>
+              <li>
+                <% if (shabbatData) { %>
+                  <% shabbatData.forEach((item, index) => { %>
+                    <div class="col-md-4">
+                      <div class="card mt-4 <% if (index % 2 === 0) { %>bg-light<% } else { %>bg-secondary text-white<% } %>">
+                        <div class="card-body">
+                          <h5 class="card-title"><%= item.title %></h5>
+                          <p class="card-text">יום: <%= item.date %></p>
+                          <p class="card-text">קטגוריה: <%= item.category %></p>
+                          <!-- Add more fields as needed -->
+                        </div>
+                      </div>
+                    </div>
+                  <% }); %>
+                <% } else { %>
+                  <div class="col-md-12">
+                    <p>לא נמצא נתונים לפי החיפוש שחיפשת.</p>
+                  </div>
+                <% } %>
+              </li>
+       
+            </ul>
+          </nav>
+        </header>
+      
+        <div class="cover">
+          <button onclick="document.getElementById('id01').style.display='block'" style="width:auto;">הוספת ספר חדש</button>
+          <h1>נא להזין ערך או חלק מהערך כדי לבצע חיפוש</h1>
+          <form  class="flex-form" action="/search" method="POST">
+            <input type="search" name="term" placeholder="יש להזין ערך או חלק מערך">
+            <button type="submit" class="btn btn-primary">חיפוש</button>
+          </form>
+          <div id="madeby">
+            <span>
+            </span>
+          </div>
+        </div>  
+      </div>
+ 
+ 
+       
+
+       <div id="id01" class="modal">
+        <button type="button" class="btncancel" onclick="cancelForm()">ביטול</button> <!-- Added cancel button -->
+         <form id="addBookForm" action="/add-book" method="POST" onsubmit="writeToExcel(event)">
+           <h1>נא להכניס ספר חדש</h1>
+           <!-- שדות הטופס ייווצרו כאן דינמית על ידי JavaScript -->
+           <div id="submitButtonContainer"></div>
+          
+         </form>
+       </div>
+       
+       
+       
+       <script>
+         function createFormFields() {
+           // Existing code here...
+       
+           const cancelButton = document.createElement('button');
+           cancelButton.setAttribute('type', 'button');
+           cancelButton.setAttribute('class', 'btn btn-secondary');
+           cancelButton.textContent = 'ביטול';
+           cancelButton.addEventListener('click', cancelForm);
+           form.appendChild(cancelButton);
+         }
+       
+         function cancelForm() {
+           document.getElementById('id01').style.display = 'none';
+         }
+       
+         // Existing code here...
+       </script>
+         <script>
+           function createFormFields() {
+             const form = document.getElementById('addBookForm');
+       
+             // Load the Excel file
+             const xhr = new XMLHttpRequest();
+             xhr.open('GET', 'test.xlsx', true);
+             xhr.responseType = 'arraybuffer';
+       
+             xhr.onload = function (e) {
+               const arraybuffer = xhr.response;
+       
+               // Convert Excel data to workbook object
+               const workbook = XLSX.read(arraybuffer, { type: 'array' });
+       
+               // Get the first worksheet
+               const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+       
+               // Extract field names from the worksheet
+               const fieldNames = [];
+               for (const cell in worksheet) {
+                 if (cell.charAt(1) === '1') {
+                   fieldNames.push(worksheet[cell].v);
+                 }
+               }
+       
+               // Create form fields based on the field names
+               fieldNames.forEach((fieldName) => {
+                 const label = document.createElement('label');
+                 label.textContent = fieldName;
+                 form.appendChild(label);
+       
+                 const inputField = document.createElement('input');
+                 inputField.setAttribute('type', 'text');
+                 inputField.setAttribute('name', fieldName);
+                 inputField.setAttribute('placeholder', "יש להזין " + fieldName);
+                 inputField.setAttribute('required', true);
+                 form.appendChild(inputField);
+               });
+       
+               const submitButton = document.createElement('button');
+               submitButton.setAttribute('type', 'submit');
+               submitButton.setAttribute('class', 'btn btn-primary');
+               submitButton.textContent = 'הוסף ספר';
+               form.appendChild(submitButton);
+             };
+       
+             xhr.send();
+           }
+       
+           window.addEventListener('load', createFormFields);
+         </script>
+       
+</body>
+</html>
